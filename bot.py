@@ -10,7 +10,11 @@ from PIL import Image, ImageDraw, ImageFont
 
 BASE_DIR = Path(__file__).resolve().parent
 TOKEN = os.getenv("DISCORD_TOKEN") or os.getenv("DISCORD_BOT_TOKEN")
-DB_PATH = BASE_DIR / "dream_enhance.db"
+# 저장 경로: Railway에서 DATA_DIR=/data + Volume(/data) 설정 시
+# 재배포/재시작 후에도 기록이 유지됩니다.
+DATA_DIR = Path(os.getenv("DATA_DIR", str(BASE_DIR)))
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+DB_PATH = DATA_DIR / "dream_enhance.db"
 BASE_IMAGE = BASE_DIR / "dream_base.png"
 
 SUCCESS_RATE = 0.35
@@ -249,6 +253,7 @@ class Bot(commands.Bot):
         init_db()
         await self.tree.sync()
         print("슬래시 명령어 동기화 완료")
+        print(f"강화 기록 DB 경로: {DB_PATH}")
 
 
 bot = Bot()
@@ -278,6 +283,24 @@ async def dream(interaction: discord.Interaction):
         )
     except Exception as e:
         print("/꿈조뜨안 오류:", repr(e))
+        await interaction.followup.send(
+            f"오류가 발생했습니다: `{type(e).__name__}`\nRailway Logs를 확인해주세요.",
+            ephemeral=True,
+        )
+
+
+@bot.tree.command(name="꿈조뜨안보기", description="저장된 내 꿈조 뜨안 강화 기록을 봅니다.")
+async def dream_view(interaction: discord.Interaction):
+    await interaction.response.defer(ephemeral=True)
+    try:
+        state = get_state(interaction.user.id)
+        file = discord.File(render_image(state), filename="dream_enhance.png")
+        embed = make_embed(interaction.user, state)
+        embed.title = "👀 내 꿈조 뜨안 기록"
+        embed.description = f"{interaction.user.mention}의 **자동 저장된 현재 기록**입니다."
+        await interaction.edit_original_response(embed=embed, attachments=[file])
+    except Exception as e:
+        print("/꿈조뜨안보기 오류:", repr(e))
         await interaction.followup.send(
             f"오류가 발생했습니다: `{type(e).__name__}`\nRailway Logs를 확인해주세요.",
             ephemeral=True,
