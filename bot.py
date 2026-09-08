@@ -32,7 +32,7 @@ def number_font(size=27):
     return ImageFont.load_default()
 
 
-FONT = number_font(27)
+FONT = number_font(38)
 
 
 def db():
@@ -122,7 +122,7 @@ def render_image(state):
     # 원본 이미지의 '보스 데미지 0.2% > 0.3%' 한 줄만 덮은 뒤
     # 현재 수치로 다시 작성합니다. 다른 부분은 그대로 둡니다.
     # 현재 원본 이미지(635x556) 기준 좌표.
-    draw.rectangle((251, 158, 603, 193), fill=(72, 72, 70, 255))
+    draw.rectangle((238, 151, 620, 202), fill=(72, 72, 70, 255))
 
     cur = state["boss_tenths"]
     nxt = min(MAX_TENTHS, cur + 1)
@@ -133,7 +133,7 @@ def render_image(state):
 
     # 그림자 + 본문
     draw.text(
-        (258, 161),
+        (247, 155),
         line,
         font=FONT,
         fill=(35, 35, 35, 220),
@@ -141,7 +141,7 @@ def render_image(state):
         stroke_fill=(35, 35, 35, 180),
     )
     draw.text(
-        (256, 159),
+        (245, 153),
         line,
         font=FONT,
         fill=(242, 242, 242, 255),
