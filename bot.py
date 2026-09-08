@@ -18,21 +18,16 @@ MAX_TENTHS = 101          # 10.1%
 MESO_PER_SUCCESS = 120_000_000
 
 
-def number_font(size=27):
-    candidates = [
-        "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
-        "/usr/share/fonts/truetype/nanum/NanumGothicBold.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation2/LiberationSans-Bold.ttf",
-        "C:/Windows/Fonts/arialbd.ttf",
-    ]
-    for p in candidates:
-        if os.path.exists(p):
-            return ImageFont.truetype(p, size)
-    return ImageFont.load_default()
+def percent_font(size=30):
+    # Railway에 한글 폰트가 없어도 퍼센트 숫자는 항상 크게 보이도록
+    # Pillow 기본 폰트를 지정 크기로 사용합니다. (숫자/기호 전용)
+    try:
+        return ImageFont.load_default(size=size)
+    except TypeError:
+        return ImageFont.load_default()
 
 
-FONT = number_font(30)
+PERCENT_FONT = percent_font(31)
 
 
 def db():
@@ -119,34 +114,26 @@ def render_image(state):
     img = Image.open(BASE_IMAGE).convert("RGBA")
     draw = ImageDraw.Draw(img)
 
-    # 원본 이미지의 '보스 데미지 0.2% > 0.3%' 한 줄만 덮은 뒤
-    # 현재 수치로 다시 작성합니다. 다른 부분은 그대로 둡니다.
-    # 현재 원본 이미지(635x556) 기준 좌표.
-    draw.rectangle((238, 151, 620, 193), fill=(72, 72, 70, 255))
+    # 원본의 "보스 데미지" 한글 글자는 그대로 살리고,
+    # 뒤의 퍼센트 수치만 크게 다시 그립니다.
+    # 이렇게 하면 Railway에 한글 폰트가 없어도 글자가 깨지지 않습니다.
+    draw.rectangle((377, 150, 620, 194), fill=(72, 72, 70, 255))
 
     cur = state["boss_tenths"]
     nxt = min(MAX_TENTHS, cur + 1)
     if cur >= MAX_TENTHS:
-        line = f"보스 데미지 {pct(cur)} (MAX)"
+        line = f"{pct(cur)} MAX"
     else:
-        line = f"보스 데미지 {pct(cur)} > {pct(nxt)}"
+        line = f"{pct(cur)} > {pct(nxt)}"
 
-    # 그림자 + 본문
+    # 성공 확률 / 실패(유지) 글씨 높이와 비슷하게 크게 표시
     draw.text(
-        (247, 157),
+        (382, 153),
         line,
-        font=FONT,
-        fill=(35, 35, 35, 220),
+        font=PERCENT_FONT,
+        fill=(245, 245, 245, 255),
         stroke_width=1,
-        stroke_fill=(35, 35, 35, 180),
-    )
-    draw.text(
-        (245, 155),
-        line,
-        font=FONT,
-        fill=(242, 242, 242, 255),
-        stroke_width=1,
-        stroke_fill=(95, 95, 95, 255),
+        stroke_fill=(70, 70, 70, 255),
     )
 
     out = io.BytesIO()
