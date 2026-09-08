@@ -284,6 +284,49 @@ async def dream(interaction: discord.Interaction):
         )
 
 
+@bot.tree.command(name="꿈조뜨안랭킹", description="꿈조 뜨안 강화 랭킹 TOP 10을 봅니다.")
+async def dream_ranking(interaction: discord.Interaction):
+    await interaction.response.defer()
+    try:
+        with db() as conn:
+            rows = conn.execute(
+                """
+                SELECT user_id, boss_tenths, attempts, successes, failures
+                FROM dream_users
+                ORDER BY boss_tenths DESC, successes DESC, attempts ASC
+                LIMIT 10
+                """
+            ).fetchall()
+
+        if not rows:
+            await interaction.edit_original_response(content="아직 랭킹 기록이 없습니다.")
+            return
+
+        medals = ["🥇", "🥈", "🥉"]
+        lines = []
+        for i, (user_id, boss_tenths, attempts, successes, failures) in enumerate(rows, start=1):
+            mark = medals[i-1] if i <= 3 else f"**{i}위**"
+            meso = successes * MESO_PER_SUCCESS
+            lines.append(
+                f"{mark} <@{user_id}> — **보뎀 {pct(boss_tenths)}**\n"
+                f"└ 시도 {attempts}회 · 성공 {successes}회 · 날린 꿈조 {failures}개 · 누적 메소 {meso:,}"
+            )
+
+        embed = discord.Embed(
+            title="🏆 꿈조 뜨안 랭킹 TOP 10",
+            description="\n\n".join(lines),
+            color=0xF1C40F,
+        )
+        embed.set_footer(text="보스 데미지 높은 순 → 성공 횟수 높은 순 → 시도 횟수 적은 순")
+        await interaction.edit_original_response(embed=embed)
+    except Exception as e:
+        print("/꿈조뜨안랭킹 오류:", repr(e))
+        await interaction.followup.send(
+            f"오류가 발생했습니다: `{type(e).__name__}`\nRailway Logs를 확인해주세요.",
+            ephemeral=True,
+        )
+
+
 if not TOKEN:
     raise RuntimeError("Railway Variables에 DISCORD_TOKEN 또는 DISCORD_BOT_TOKEN을 등록해주세요.")
 
