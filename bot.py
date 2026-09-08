@@ -9,7 +9,7 @@ from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFont
 
 BASE_DIR = Path(__file__).resolve().parent
-TOKEN = os.getenv("DISCORD_TOKEN")
+TOKEN = os.getenv("DISCORD_TOKEN") or os.getenv("DISCORD_BOT_TOKEN")
 DB_PATH = BASE_DIR / "dream_enhance.db"
 BASE_IMAGE = BASE_DIR / "dream_base.png"
 
@@ -270,7 +270,7 @@ async def on_ready():
     print(f"로그인 완료: {bot.user} ({bot.user.id})")
 
 
-@bot.tree.command(name="꿈조강화", description="꿈의 조각 뜨안 강화 시뮬레이션을 엽니다.")
+@bot.tree.command(name="꿈조뜨안", description="꿈의 조각 뜨안 강화 시뮬레이션을 엽니다.")
 async def dream(interaction: discord.Interaction):
     # 이미지 처리 전에 즉시 defer해서 응답 시간 초과 방지
     await interaction.response.defer()
@@ -288,7 +288,7 @@ async def dream(interaction: discord.Interaction):
             embed=make_embed(interaction.user, state), file=file, view=view
         )
     except Exception as e:
-        print("/꿈조강화 오류:", repr(e))
+        print("/꿈조뜨안 오류:", repr(e))
         await interaction.followup.send(
             f"오류가 발생했습니다: `{type(e).__name__}`\nRailway Logs를 확인해주세요.",
             ephemeral=True,
@@ -296,6 +296,6 @@ async def dream(interaction: discord.Interaction):
 
 
 if not TOKEN:
-    raise RuntimeError("Railway Variables에 DISCORD_TOKEN을 등록해주세요.")
+    raise RuntimeError("Railway Variables에 DISCORD_TOKEN 또는 DISCORD_BOT_TOKEN을 등록해주세요.")
 
 bot.run(TOKEN)

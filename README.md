@@ -10,7 +10,7 @@
 - 기록: 시도 / 성공 / 날린 꿈조 / 누적 메소
 
 ## 명령어
-`/꿈조강화`
+`/꿈조뜨안`
 
 ## GitHub → Railway 적용
 이 ZIP의 **내용물 5개를 GitHub 저장소 최상단(root)** 에 올리세요.
@@ -21,7 +21,7 @@
 - README.md
 
 Railway → Variables에 아래 변수를 등록합니다.
-- `DISCORD_TOKEN` = Discord Developer Portal에서 발급한 봇 토큰
+- `DISCORD_TOKEN 또는 DISCORD_BOT_TOKEN` = Discord Developer Portal에서 발급한 봇 토큰
 
 GitHub에 Commit하면 Railway가 자동 재배포됩니다.
 
